@@ -37,7 +37,6 @@
             tbBrZaposlenih = new TextBox();
             lbLokacije = new ListBox();
             tbNazivKlinike = new TextBox();
-            button5 = new Button();
             button4 = new Button();
             button3 = new Button();
             button2 = new Button();
@@ -45,6 +44,7 @@
             label4 = new Label();
             label3 = new Label();
             label2 = new Label();
+            button5 = new Button();
             label1 = new Label();
             panel1.SuspendLayout();
             SuspendLayout();
@@ -55,7 +55,7 @@
             listView1.Location = new Point(12, 16);
             listView1.Margin = new Padding(3, 4, 3, 4);
             listView1.Name = "listView1";
-            listView1.Size = new Size(476, 103);
+            listView1.Size = new Size(568, 103);
             listView1.TabIndex = 1;
             listView1.UseCompatibleStateImageBehavior = false;
             listView1.View = View.Details;
@@ -86,7 +86,6 @@
             panel1.Controls.Add(tbBrZaposlenih);
             panel1.Controls.Add(lbLokacije);
             panel1.Controls.Add(tbNazivKlinike);
-            panel1.Controls.Add(button5);
             panel1.Controls.Add(button4);
             panel1.Controls.Add(button3);
             panel1.Controls.Add(button2);
@@ -104,7 +103,7 @@
             tbBrZaposlenih.Enabled = false;
             tbBrZaposlenih.Location = new Point(3, 178);
             tbBrZaposlenih.Name = "tbBrZaposlenih";
-            tbBrZaposlenih.Size = new Size(125, 27);
+            tbBrZaposlenih.Size = new Size(190, 27);
             tbBrZaposlenih.TabIndex = 10;
             // 
             // lbLokacije
@@ -113,33 +112,25 @@
             lbLokacije.HorizontalScrollbar = true;
             lbLokacije.Location = new Point(0, 114);
             lbLokacije.Name = "lbLokacije";
-            lbLokacije.Size = new Size(158, 24);
+            lbLokacije.Size = new Size(193, 24);
             lbLokacije.TabIndex = 9;
             // 
             // tbNazivKlinike
             // 
             tbNazivKlinike.Location = new Point(3, 52);
             tbNazivKlinike.Name = "tbNazivKlinike";
-            tbNazivKlinike.Size = new Size(125, 27);
+            tbNazivKlinike.Size = new Size(190, 27);
             tbNazivKlinike.TabIndex = 8;
-            // 
-            // button5
-            // 
-            button5.Location = new Point(243, 292);
-            button5.Name = "button5";
-            button5.Size = new Size(100, 50);
-            button5.TabIndex = 7;
-            button5.Text = "Dodaj Kliniku";
-            button5.UseVisualStyleBackColor = true;
             // 
             // button4
             // 
-            button4.Location = new Point(124, 292);
+            button4.Location = new Point(243, 292);
             button4.Name = "button4";
             button4.Size = new Size(100, 50);
             button4.TabIndex = 6;
             button4.Text = "Izmeni Kliniku";
             button4.UseVisualStyleBackColor = true;
+            button4.Click += button4_Click;
             // 
             // button3
             // 
@@ -149,6 +140,7 @@
             button3.TabIndex = 5;
             button3.Text = "Obrisi kliniku";
             button3.UseVisualStyleBackColor = true;
+            button3.Click += button3_Click;
             // 
             // button2
             // 
@@ -197,6 +189,16 @@
             label2.TabIndex = 0;
             label2.Text = "Naziv";
             // 
+            // button5
+            // 
+            button5.Location = new Point(388, 146);
+            button5.Name = "button5";
+            button5.Size = new Size(192, 50);
+            button5.TabIndex = 7;
+            button5.Text = "Dodaj Kliniku";
+            button5.UseVisualStyleBackColor = true;
+            button5.Click += button5_Click;
+            // 
             // label1
             // 
             label1.AutoSize = true;
@@ -212,10 +214,11 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.PaleTurquoise;
-            ClientSize = new Size(618, 514);
+            ClientSize = new Size(647, 514);
             Controls.Add(label1);
             Controls.Add(panel1);
             Controls.Add(listView1);
+            Controls.Add(button5);
             Margin = new Padding(3, 4, 3, 4);
             Name = "FormaKlinike";
             Text = "FormaKlinike";

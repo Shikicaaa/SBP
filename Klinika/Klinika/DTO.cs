@@ -227,9 +227,9 @@ namespace Klinika
     {
         public int OdeljenjeID { get; set; }
         public string Naziv { get; set; }
-        public int BrSobe { get; set; }
+        public string BrSobe { get; set; }
         public Lekar NadlezniLekar { get; set; }
-        public OdeljenjeView(int id, string naziv, int brsobe, Lekar Nadlezni)
+        public OdeljenjeView(int id, string naziv, string brsobe, Lekar Nadlezni)
         {
             OdeljenjeID = id;
             Naziv = naziv;
@@ -241,7 +241,7 @@ namespace Klinika
     {
         public int OdeljenjeID { get; set; }
         public string Naziv { get; set; }
-        public int BrSobe { get; set; }
+        public string BrSobe { get; set; }
         public Lekar NadlezniLekar { get; set; }
         public IList<PregledDetailed> Pregledi { get; set; }
         public IList<ZaposleniDetailed> Zaposleni { get; set; }

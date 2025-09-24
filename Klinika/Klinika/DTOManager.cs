@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using NHibernate.Linq;
 using Klinika.Entiteti;
+using NHibernate.Util;
+using Klinika.Forme;
 
 namespace Klinika
 {
@@ -237,6 +239,65 @@ namespace Klinika
                 throw;
             }
         }
+        public static List<Lekar> VratiLekare()
+        {
+            try
+            {
+                using(ISession s = DataLayer.GetSession())
+                {
+                    var lekari = s.Query<Lekar>()
+                        .Where(l => l.Tip == "Lekar")
+                        .ToList();
+                    return lekari;
+                }
+            }catch(Exception e)
+            {
+                MessageBox.Show(e.Message);
+                return null;
+            }
+        }
+        public static string VratiIzabranogZa(string brojKartona)
+        {
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    Lekar l = s.Query<Pacijent>()
+                        .Where(p => p.BrojKartona == brojKartona)
+                        .Select(p => p.IzabraniLekar).FirstOrDefault();
+                    if (l == null)
+                    {
+                        return "Nema izabranog lekara!";
+                    }
+                    return $"{l.Ime} {l.Prezime} {l.JMBG}";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return "";
+                throw;
+            }
+        }
+        public static int PacijentPreglediCount(string brojKartona)
+        {
+            try
+            {
+                using (ISession session = DataLayer.GetSession())
+                {
+                    var pacijent = session.Query<Pacijent>()
+                                .Where(p => p.BrojKartona == brojKartona)
+                                .FirstOrDefault();
+                    if (pacijent == null) return 0;
+                    return pacijent.Termini.Count;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return 0;
+            }
+        }
         public static PacijentDetailed VratiPacijenta(string brojKartona)
         {
             try
@@ -256,7 +317,7 @@ namespace Klinika
                         p.Email,
                         p.BrojRFZO,
                         p.ImaRFZO,
-                        p.IzabraniLekar.JMBG
+                        (p.IzabraniLekar != null ? p.IzabraniLekar.JMBG : "Nema izabranog lekara")
                     );
                 }
             }
@@ -377,6 +438,16 @@ namespace Klinika
 
                     foreach (var klinika in klinike)
                     {
+                        var klinikaDto = new KlinikaDetailed(klinika.KlinikaID, klinika.Naziv);
+                        foreach (var lokacija in klinika.Lokacije)
+                        {
+                            klinikaDto.Lokacije.Add(new LokacijaDetailed
+                            {
+                                LokacijaID = lokacija.LokacijaID,
+                                Adresa = lokacija.Adresa,
+                                RadnoVreme = lokacija.RadnoVreme
+                            });
+                        }
                         klinikeView.Add(new KlinikaDetailed(klinika.KlinikaID, klinika.Naziv));
                     }
                 }
@@ -500,6 +571,24 @@ namespace Klinika
             }
             return zaposleniView;
         }
+        public static Lokacija VratiLokacijuPoAdresi(string adresa)
+        {
+            try
+            {
+                using(ISession s = DataLayer.GetSession())
+                {
+                    var lokacija = s.Query<Lokacija>()
+                        .Where(l => l.Adresa == adresa)
+                        .FirstOrDefault();
+                    if (lokacija != null) return lokacija;
+                    return null;
+                }
+            }catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return null;
+            }
+        }
         public static List<ZaposleniView> VratiZaposleneKlinike(int klinikaId)
         {
             var zaposleniView = new List<ZaposleniView>();
@@ -507,15 +596,13 @@ namespace Klinika
             {
                 using (ISession session = DataLayer.GetSession())
                 {
-                    IQuery query = session.CreateQuery(
-                        "SELECT DISTINCT z FROM Odeljenje o " +
-                        "JOIN o.Klinike k " +
-                        "JOIN o.Zaposleni z " +
-                        "WHERE k.KlinikaID = :klinikaId"
-                    );
-                    query.SetParameter("klinikaId", klinikaId);
+                    List<Zaposleni> zaposleni = session.Query<KlinikaC>() // 1. Počni od tabele Klinika
+                        .Where(k => k.KlinikaID == klinikaId)          // 2. Nađi kliniku sa zadatim ID-jem
+                        .SelectMany(k => k.Odeljenja)                 // 3. Uzmi sva odeljenja te klinike
+                        .SelectMany(o => o.Zaposleni)                 // 4. Iz tih odeljenja, uzmi sve zaposlene
+                        .Distinct()                                   // 5. Ukloni duplikate (ako zaposleni radi na više odeljenja u istoj klinici)
+                        .ToList();
 
-                    var zaposleni = query.List<Zaposleni>();
 
                     foreach (var z in zaposleni)
                     {
@@ -529,6 +616,138 @@ namespace Klinika
                 throw;
             }
             return zaposleniView;
+        }
+        public static Odeljenje VratiOdeljenjePoNazivu(string naziv)
+        {
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    Odeljenje odeljenje = s.Query<Odeljenje>()
+                        .Where(o => o.Naziv == naziv).FirstOrDefault();
+                    return odeljenje;
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+                return null;
+            }
+        }
+        public static Zaposleni VratiZaposlenog(string jmbg)
+        {
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    Zaposleni zaposleni = s.Get<Zaposleni>(jmbg);
+                    return zaposleni;
+                }
+            }catch(Exception e)
+            {
+                MessageBox.Show(e.Message);
+                return null;
+            }
+        }
+        public static Lokacija DodajLokaciju(string adresa, string radnovreme = "")
+        {
+            try
+            {
+                using(ISession s = DataLayer.GetSession())
+                {
+                    using (ITransaction t = s.BeginTransaction())
+                    {
+                        Lokacija novaLokacija = new Lokacija(adresa, radnovreme);
+                        s.Save(novaLokacija);
+                        t.Commit();
+                        MessageBox.Show("Nova lokacija dodata!");
+                        return novaLokacija;
+                    }
+                }
+            }catch(Exception e)
+            {
+                MessageBox.Show(e.Message);
+                return null;
+            }
+        }
+        public static void IzmeniKliniku(int klinikaId, string naziv, List<Odeljenje> odeljenja, List<Zaposleni> zaposleni, Lokacija l)
+        {
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    using (ITransaction t = s.BeginTransaction())
+                    {
+                        KlinikaC klinikaZaIzmenu = s.Get<KlinikaC>(klinikaId);
+                        if (klinikaZaIzmenu == null)
+                        {
+                            MessageBox.Show("Ne postoji klinika sa tim ID-jem");
+                            return;
+                        }
+                        klinikaZaIzmenu.Naziv = naziv;
+                        klinikaZaIzmenu.Odeljenja.Clear();
+                        foreach (var odeljenje in odeljenja)
+                        {
+                            var persistentOdeljenje = s.Merge(odeljenje);
+                            klinikaZaIzmenu.Odeljenja.Add(persistentOdeljenje);
+                        }
+                        var persistentLokacija = s.Merge(l);
+                        klinikaZaIzmenu.Lokacije.Clear();
+                        klinikaZaIzmenu.Lokacije.Add(persistentLokacija);
+                        t.Commit();
+                        MessageBox.Show("Uspesno izmenjena klinika!");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Greska pri dodavanju klinike: " + ex.Message);
+                throw;
+            }
+        }
+        public static void DodajKliniku(string naziv, List<Odeljenje> odeljenja, List<Zaposleni> zaposleni, Lokacija l)
+        {
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    using(ITransaction t = s.BeginTransaction())
+                    {
+                        KlinikaC novaKlinika = new KlinikaC(naziv, zaposleni, odeljenja, l);
+                        s.Save(novaKlinika);
+                        t.Commit();
+                        MessageBox.Show("Uspesno dodata klinika!");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Greska pri dodavanju klinike: " + ex.Message);
+                throw;
+            }
+        }
+        public static void ObrisiKliniku(int klinikaId)
+        {
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    using (ITransaction t = s.BeginTransaction())
+                    {
+                        KlinikaC klinikaZaBrisanje = s.Load<KlinikaC>(klinikaId);
+                        klinikaZaBrisanje.Odeljenja.Clear();
+
+                        s.Delete(klinikaZaBrisanje);
+
+                        t.Commit();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Greška pri brisanju klinike: " + ex.Message);
+                throw;
+            }
         }
         public static void DodajUslugu(string naziv, double cena)
         {
@@ -603,18 +822,19 @@ namespace Klinika
             {
                 using (ISession s = DataLayer.GetSession())
                 {
-                    var lokacije = s.Query<Lokacija>()
-                                    .Where(l => l.Odeljenja.Any(o => o.Klinike.Any(k => k.KlinikaID == klinikaId)))
-                                    .ToList();
+                    var klinika = s.Get<KlinikaC>(klinikaId);
 
-                    foreach (var l in lokacije)
+                    if (klinika != null)
                     {
-                        lokacijeView.Add(new LokacijaDetailed
+                        foreach (var l in klinika.Lokacije)
                         {
-                            LokacijaID = l.LokacijaID,
-                            Adresa = l.Adresa,
-                            RadnoVreme = l.RadnoVreme
-                        });
+                            lokacijeView.Add(new LokacijaDetailed
+                            {
+                                LokacijaID = l.LokacijaID,
+                                Adresa = l.Adresa,
+                                RadnoVreme = l.RadnoVreme
+                            });
+                        }
                     }
                 }
             }
@@ -625,27 +845,51 @@ namespace Klinika
             }
             return lokacijeView;
         }
-        public static List<OdeljenjeView> VratiOdeljenja(int klinikaId)
+        public static Lekar VratiNadleznog(int odeljenjeId)
         {
-            var odeljenja = new List<OdeljenjeView>();
             try
             {
                 using (ISession s = DataLayer.GetSession())
                 {
-                    var odlj = s.Query<Odeljenje>()
-                        .Where(o => o.Klinike.Any(k => k.KlinikaID == klinikaId)).ToList();
-                    foreach (var o in odlj)
+                    var odeljenje = s.Get<Odeljenje>(odeljenjeId);
+                    if (odeljenje != null && odeljenje.NadlezniLekar != null)
                     {
-                        odeljenja.Add(new OdeljenjeView(o.OdeljenjeID, o.Naziv, o.BrSobe, o.NadlezniLekar));
+                        NHibernateUtil.Initialize(odeljenje.NadlezniLekar);
+                        return odeljenje.NadlezniLekar;
+                    }
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return null;
+            }
+        }
+        public static List<OdeljenjeView> VratiOdeljenja(int klinikaId)
+        {
+            var odeljenjaView = new List<OdeljenjeView>();
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    var klinika = s.Get<KlinikaC>(klinikaId);
+
+                    if (klinika != null)
+                    {
+                        foreach (var o in klinika.Odeljenja)
+                        {
+                            odeljenjaView.Add(new OdeljenjeView(o.OdeljenjeID, o.Naziv, o.BrSobe.ToString(), o.NadlezniLekar));
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                MessageBox.Show(ex.Message);
                 return null;
             }
-            return odeljenja;
+            return odeljenjaView;
         }
         public static void DodajSertifikatSestra(string jmbg, string nazivSertifikata, DateTime datumIzdavanja)
         {
@@ -854,5 +1098,59 @@ namespace Klinika
                 }
             }
         }
+        public static List<OdeljenjeView> VratiOdeljenja()
+        {
+            var odeljenjaView = new List<OdeljenjeView>();
+            try
+            {
+                using(ISession s = DataLayer.GetSession())
+                {
+                    var odeljenja = s.Query<Odeljenje>().ToList();
+                    foreach (var o in odeljenja)
+                    {
+                        odeljenjaView.Add(new OdeljenjeView(o.OdeljenjeID, o.Naziv, o.BrSobe, o.NadlezniLekar));
+                    }
+                    return odeljenjaView;
+                }
+            }catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+                return null;
+            }
+        }
+        public static void DodajPacijenta(
+            string brkart, string ime, string prezime,
+            char pol, string adresa, DateTime datumrodj,
+            string kontakttel, string mail, string brojrfzo,
+            char imarfzo, Lekar izabrani
+        )
+        {
+            using (ISession s = DataLayer.GetSession())
+            {
+                using (ITransaction t = s.BeginTransaction())
+                {
+                    Pacijent noviPacijent = new Pacijent(brkart, ime, prezime, pol, adresa, datumrodj, kontakttel, mail, brojrfzo, imarfzo, izabrani);
+                    s.Save(noviPacijent);
+                    t.Commit();
+                }
+            }
+        }
+        public static Lekar VratiLekara(string jmbg)
+        {
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    Lekar l = s.Query<Lekar>().Where(l => l.JMBG == jmbg).First();
+                    return l;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+        }
+// TODO OBAVI PREGLED, NAPLATI, OSIGURANJA DA SE DODAJU
     }
 }

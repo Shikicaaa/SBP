@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Klinika.Entiteti;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -25,10 +26,13 @@ namespace Klinika.Forme
 
             foreach(OdeljenjeView o in odeljenja)
             {
+                Lekar l = DTOManager.VratiNadleznog(o.OdeljenjeID);
                 ListViewItem item = new ListViewItem(new string[]
                 {
                     o.OdeljenjeID.ToString(), o.Naziv, o.BrSobe.ToString(),
-                    o.NadlezniLekar.JMBG, o.NadlezniLekar.Ime, o.NadlezniLekar.Prezime
+                    l == null ? "" : l.JMBG,
+                    l == null ? "" : l.Ime,
+                    l == null ? "" : l.Prezime
                 });
                 listView1.Items.Add(item);
             }

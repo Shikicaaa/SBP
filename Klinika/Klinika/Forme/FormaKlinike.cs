@@ -1,4 +1,5 @@
-﻿using Klinika.Forme;
+﻿using Klinika.Entiteti;
+using Klinika.Forme;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -33,8 +34,9 @@ namespace Klinika
 
                 foreach (KlinikaDetailed k in Klinike)
                 {
+                    List<LokacijaDetailed> lokacije = DTOManager.VratiLokacijeKlinike(k.KlinikaID);
                     List<ZaposleniView> zaposleni = DTOManager.VratiZaposleneKlinike(k.KlinikaID);
-                    ListViewItem item = new ListViewItem(new string[] { k.KlinikaID.ToString(), k.Naziv, (k.Lokacije.Count > 0 ? k.Lokacije[0].ToString()! : ""), zaposleni.Count().ToString() });
+                    ListViewItem item = new ListViewItem(new string[] { k.KlinikaID.ToString(), k.Naziv, (lokacije.Count > 0 ? lokacije[0].Adresa : ""), zaposleni.Count().ToString() });
                     this.listView1.Items.Add(item);
                 }
                 this.listView1.Refresh();
@@ -53,7 +55,7 @@ namespace Klinika
                 tbNazivKlinike.Text = item.SubItems[1].Text;
                 lbLokacije.Items.Clear();
                 List<LokacijaDetailed> lokacije = DTOManager.VratiLokacijeKlinike(int.Parse(item.SubItems[0].Text));
-                foreach(LokacijaDetailed l in lokacije)
+                foreach (LokacijaDetailed l in lokacije)
                 {
                     lbLokacije.Items.Add(l.Adresa);
                 }
@@ -69,6 +71,8 @@ namespace Klinika
                 {
                     ListViewItem item = listView1.SelectedItems[0];
                     int id = int.Parse(item.SubItems[0].Text);
+                    string adresa = item.SubItems[2].Text;
+                    Lokacija l = DTOManager.VratiLokacijuPoAdresi(adresa);
                     List<Klinika.ZaposleniView> zaposleni = DTOManager.VratiZaposleneKlinike(id);
                     FormaZaposleni f = new FormaZaposleni(zaposleni);
                     f.ShowDialog();
@@ -92,7 +96,8 @@ namespace Klinika
                 ListViewItem item = listView1.SelectedItems[0];
                 int id = int.Parse(item.SubItems[0].Text);
                 List<OdeljenjeView> odeljenja = DTOManager.VratiOdeljenja(id);
-                if(odeljenja != null)
+
+                if (odeljenja != null)
                 {
                     FormaOdeljenja forma = new FormaOdeljenja(odeljenja);
                     forma.ShowDialog();
@@ -106,6 +111,90 @@ namespace Klinika
             {
                 MessageBox.Show("Odaberite bar 1 kliniku.");
             }
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            FormaDodajKliniku forma = new FormaDodajKliniku(false, -1);
+            forma.ShowDialog();
+            try
+            {
+                this.listView1.Items.Clear();
+
+                List<KlinikaDetailed> Klinike = DTOManager.VratiSveKlinike();
+
+                foreach (KlinikaDetailed k in Klinike)
+                {
+                    List<LokacijaDetailed> lokacije = DTOManager.VratiLokacijeKlinike(k.KlinikaID);
+                    List<ZaposleniView> zaposleni = DTOManager.VratiZaposleneKlinike(k.KlinikaID);
+                    ListViewItem item = new ListViewItem(new string[] { k.KlinikaID.ToString(), k.Naziv, (lokacije.Count > 0 ? lokacije[0].Adresa : ""), zaposleni.Count().ToString() });
+                    this.listView1.Items.Add(item);
+                }
+                this.listView1.Refresh();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            if (listView1.SelectedItems.Count > 0)
+            {
+                ListViewItem item = listView1.SelectedItems[0];
+                int id = int.Parse(item.SubItems[0].Text);
+                DTOManager.ObrisiKliniku(id);
+                try
+                {
+                    this.listView1.Items.Clear();
+
+                    List<KlinikaDetailed> Klinike = DTOManager.VratiSveKlinike();
+
+                    foreach (KlinikaDetailed k in Klinike)
+                    {
+                        List<LokacijaDetailed> lokacije = DTOManager.VratiLokacijeKlinike(k.KlinikaID);
+                        List<ZaposleniView> zaposleni = DTOManager.VratiZaposleneKlinike(k.KlinikaID);
+                        ListViewItem i = new ListViewItem(new string[] { k.KlinikaID.ToString(), k.Naziv, (lokacije.Count > 0 ? lokacije[0].Adresa : ""), zaposleni.Count().ToString() });
+                        this.listView1.Items.Add(i);
+                    }
+                    this.listView1.Refresh();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            if (listView1.SelectedItems.Count > 0)
+            {
+                ListViewItem item = listView1.SelectedItems[0];
+                int id = int.Parse(item.SubItems[0].Text);
+                FormaDodajKliniku forma = new FormaDodajKliniku(true, id);
+                forma.ShowDialog();
+                try
+                {
+                    this.listView1.Items.Clear();
+
+                    List<KlinikaDetailed> Klinike = DTOManager.VratiSveKlinike();
+
+                    foreach (KlinikaDetailed k in Klinike)
+                    {
+                        List<LokacijaDetailed> lokacije = DTOManager.VratiLokacijeKlinike(k.KlinikaID);
+                        List<ZaposleniView> zaposleni = DTOManager.VratiZaposleneKlinike(k.KlinikaID);
+                        ListViewItem i = new ListViewItem(new string[] { k.KlinikaID.ToString(), k.Naziv, (lokacije.Count > 0 ? lokacije[0].Adresa : ""), zaposleni.Count().ToString() });
+                        this.listView1.Items.Add(i);
+                    }
+                    this.listView1.Refresh();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }else MessageBox.Show("Mora biti odabrana bar 1 klinika.");
         }
     }
 }

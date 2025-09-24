@@ -36,7 +36,35 @@ namespace Klinika.Forme
 
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (listView1.SelectedItems.Count > 0)
+            {
+                ListViewItem item = listView1.SelectedItems[0];
+                string br_kartona = item.SubItems[0].Text;
+                var pacijent = DTOManager.VratiPacijenta(br_kartona);
+                string jmbg_izabranog = pacijent.IzabraniLekarJMBG;
+                tbBrPregleda.Text = DTOManager.PacijentPreglediCount(br_kartona).ToString();
+                tbIzabrani.Text = DTOManager.VratiIzabranogZa(br_kartona);
+            }
+        }
 
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (listView1.SelectedItems.Count > 0)
+            {
+                ListViewItem item = listView1.SelectedItems[0];
+                string br_kartona = item.SubItems[0].Text;
+            }
+            else
+            {
+                MessageBox.Show("Odaberite bar jednog pacijenta.");
+                return;
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            FormaDodajPacijenta forma = new FormaDodajPacijenta();
+            forma.ShowDialog();
         }
     }
 }

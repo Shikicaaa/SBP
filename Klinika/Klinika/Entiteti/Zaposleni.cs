@@ -21,13 +21,15 @@ namespace Klinika.Entiteti
 
         #region Veze
         public virtual IList<RasporedjenU> RasporedjenU { get; set; }
-        
+        public virtual IList<Odeljenje> Odeljenja { get; set; }
+
         #endregion
 
         #region Konstruktori
         public Zaposleni()
         {
             RasporedjenU = new List<RasporedjenU>();
+            Odeljenja = new List<Odeljenje>();
         }
         #endregion
     }

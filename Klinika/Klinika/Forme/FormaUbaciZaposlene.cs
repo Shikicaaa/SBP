@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -44,6 +45,8 @@ namespace Klinika.Forme
             }
             if(comboBox1.Text == "Lekar")
             {
+                string specijalizacija = Interaction.InputBox("Unesite Specijalizaciju", "Specijalizacija lekara", "Hirurg");
+                string brLicence = Interaction.InputBox("Unesite broj licence", "Broj Licence lekara", "L12345678123");
                 LekarDetailed noviLekar = new LekarDetailed()
                 {
                     JMBG = tbJMBG.Text,
@@ -53,7 +56,9 @@ namespace Klinika.Forme
                     Adresa = tbAdresa.Text,
                     KontaktTelefon = tbKontaktTelefona.Text,
                     Email = tbEmail.Text,
-                    DatumZaposlenja = dtpDatumZaposlenja.Value
+                    DatumZaposlenja = dtpDatumZaposlenja.Value,
+                    Specijalizacija = specijalizacija,
+                    BRLicence = brLicence
                 };
                 DTOManager.DodajLekara(noviLekar);
 

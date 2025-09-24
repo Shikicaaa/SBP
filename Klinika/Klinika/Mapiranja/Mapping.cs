@@ -31,6 +31,12 @@ namespace Klinika.Mapiranja
                 .KeyColumn("ZAPOSLENIJMBG")
                 .Cascade.All()
                 .Inverse();
+
+            HasManyToMany(x => x.Odeljenja)
+                .Table("RADI_U")
+                .ParentKeyColumn("ZAPOSLENIJMBG")
+                .ChildKeyColumn("ODELJENJEID")
+                .Inverse();
         }
     }
     public class LekarMap : SubclassMap<Lekar>
@@ -41,11 +47,11 @@ namespace Klinika.Mapiranja
             KeyColumn("JMBG");
 
             Map(x => x.BRLicence, "BROJLICENCE");
-            Map(x => x.Specijalizacija, "SPECIJALIZACIJA");
+            Map(x => x.Specijalizacija, "SPECIJALIZACIJA").Nullable();
 
-            HasMany(x => x.Termini).KeyColumn("JMBG").Inverse().Cascade.All();
-            HasMany(x => x.Racuni).KeyColumn("JMBG").Inverse().Cascade.All();
-            HasMany(x => x.NadleznaOdeljenja).KeyColumn("JMBG").Inverse().Cascade.All();
+            HasMany(x => x.Termini).KeyColumn("LEKARJMBG").Inverse().Cascade.All();
+            HasMany(x => x.Racuni).KeyColumn("LEKARJMBG").Inverse().Cascade.All();
+            HasMany(x => x.NadleznaOdeljenja).KeyColumn("ODGOVORNILEKARJMBG").Inverse().Cascade.All();
         }
     }
     public class LaborantMap : SubclassMap<Laborant>
@@ -107,6 +113,12 @@ namespace Klinika.Mapiranja
                 .ChildKeyColumn("ODELJENJEID")
                 .Cascade.All();
 
+            HasManyToMany(x => x.Klinike)
+                .Table("KLINIKA_LOKACIJA")
+                .ParentKeyColumn("LokacijaID")
+                .ChildKeyColumn("KlinikaID")
+                .Inverse()
+                .Cascade.All();
         }
     }
     public class KlinikaMap : ClassMap<KlinikaC>
@@ -114,16 +126,21 @@ namespace Klinika.Mapiranja
         public KlinikaMap()
         {
             Table("KLINIKA");
-            Id(x => x.KlinikaID, "KLINIKAID").GeneratedBy.Identity();
+            Id(x => x.KlinikaID, "KLINIKAID").GeneratedBy.Sequence("KLINIKA_SEQ");
             Map(x => x.Naziv, "NAZIV");
-
-            HasMany(x => x.Lokacije).KeyColumn("KLINIKAID").Inverse().Cascade.All();
 
             HasManyToMany(x => x.Odeljenja)
                 .Table("PRIPADA_KLINICI")
                 .ParentKeyColumn("KLINIKAID")
                 .ChildKeyColumn("ODELJENJEID")
                 .Cascade.All();
+
+            HasManyToMany(x => x.Lokacije)
+                .Table("KLINIKA_LOKACIJA")
+                .ParentKeyColumn("KlinikaID")
+                .ChildKeyColumn("LokacijaID")
+                .Cascade.All();
+
         }
     }
     public class OdeljenjeMap : ClassMap<Odeljenje>
@@ -151,6 +168,15 @@ namespace Klinika.Mapiranja
                 .ParentKeyColumn("ODELJENJEID")
                 .ChildKeyColumn("ZAPOSLENIJMBG")
                 .Cascade.All();
+
+            HasManyToMany(x => x.Usluge)
+                .Table("OBAVLJA_SE_U")
+                .ParentKeyColumn("ODELJENJEID")
+                .ChildKeyColumn("USLUGAID")
+                .Cascade.All()
+                .Inverse();
+
+
         }
     }
     public class PacijentMap : ClassMap<Pacijent>
@@ -188,6 +214,7 @@ namespace Klinika.Mapiranja
             Map(x => x.Preporuka, "PREPORUKA");
 
             References(x => x.Termin, "TERMINID").Unique();
+            References(x => x.Odeljenje, "ODELJENJEID");
 
             HasManyToMany(x => x.Analize)
             .Table("PREGLED_ANALIZA")
@@ -239,6 +266,11 @@ namespace Klinika.Mapiranja
             Map(x => x.Cena, "CENA");
 
             HasMany(x => x.StavkaRacuna).KeyColumn("USLUGAID").Inverse().Cascade.All();
+            HasManyToMany(x => x.Odeljenja)
+                .Table("OBAVLJA_SE_U")
+                .ParentKeyColumn("USLUGAID")
+                .ChildKeyColumn("ODELJENJEID")
+                .Cascade.All();
         }
     }
     public class OsiguravajucaKucaMap : ClassMap<OsiguravajucaKuca>

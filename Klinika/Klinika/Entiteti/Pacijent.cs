@@ -37,5 +37,28 @@ namespace Klinika.Entiteti
             Racuni = new List<Racun>();
             PrivatnaOsiguranja = new List<Osiguranje>();
         }
+        public Pacijent(
+            string brkart, string ime, string prezime,
+            char pol, string adresa, DateTime datumrodj,
+            string kontakttel, string email, string brrfzo,
+            char imarfzo, Lekar izabrani
+        )
+        {
+            BrojKartona = brkart;
+            Ime = ime;
+            Prezime = prezime;
+            Pol = pol;
+            Adresa = adresa;
+            DatumRodjenja = datumrodj;
+            KontaktTelefon = kontakttel;
+            Email = email;
+            BrojRFZO = brrfzo;
+            ImaRFZO = imarfzo;
+            IzabraniLekar = izabrani;
+            Termini = new List<Termin>();
+            Pregledi = new List<Pregled>();
+            LaboratorijskeAnalize = new List<LaboratorijskaAnaliza>();
+            PrivatnaOsiguranja = new List<Osiguranje>();
+        }
     }
 }

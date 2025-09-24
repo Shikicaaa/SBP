@@ -20,5 +20,13 @@ namespace Klinika.Entiteti
             Odeljenja = new List<Odeljenje>();
             Lokacije = new List<Lokacija>();
         }
+        public KlinikaC(string naziv, List<Zaposleni> zaposleni, List<Odeljenje> odeljenja, Lokacija l)
+        {
+            Zaposleni = zaposleni;
+            Odeljenja = odeljenja;
+            Naziv = naziv;
+            Lokacije = new List<Lokacija>();
+            Lokacije.Add(l);
+        }
     }
 }

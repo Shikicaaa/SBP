@@ -11,7 +11,7 @@ namespace Klinika.Entiteti
         public virtual int LokacijaID { get; set; }
         public virtual string Adresa { get; set; }
         public virtual string RadnoVreme { get; set; }
-        public virtual KlinikaC Klinika { get; set; }
+        public virtual IList<KlinikaC> Klinike { get; set; }
         public virtual IList<Odeljenje> Odeljenja { get; set; }
         public virtual IList<RasporedjenU> Zaposleni { get; set; }
 
@@ -19,6 +19,15 @@ namespace Klinika.Entiteti
         {
             Odeljenja = new List<Odeljenje>();
             Zaposleni = new List<RasporedjenU>();
+            Klinike = new List<KlinikaC>();
+        }
+        public Lokacija(string adresa, string radnovreme)
+        {
+            Adresa = adresa;
+            RadnoVreme = radnovreme;
+            Odeljenja = new List<Odeljenje>();
+            Zaposleni = new List<RasporedjenU>();
+            Klinike = new List<KlinikaC>();
         }
     }
 }

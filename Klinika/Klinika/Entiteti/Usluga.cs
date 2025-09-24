@@ -11,12 +11,14 @@ namespace Klinika.Entiteti
         public virtual int UslugaID { get; set; }
         public virtual string Naziv { get; set; }
         public virtual double Cena { get; set; }
+        public virtual IList<Odeljenje> Odeljenja { get; set; }
 
         public virtual IList<StavkaRacuna> StavkaRacuna { get; set; }
 
 
         public Usluga()
         {
+            Odeljenja = new List<Odeljenje>();
             StavkaRacuna = new List<StavkaRacuna>();
         }
         public Usluga(string naziv, double cena)
