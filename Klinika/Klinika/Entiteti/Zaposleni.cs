@@ -61,6 +61,12 @@ namespace Klinika.Entiteti
         {
             Zaposleni = new List<Zaposleni>();
         }
+        public Sertifikat(string naziv)
+        {
+            Naziv = naziv;
+            DatumIzdavanja = DateTime.Now;
+            Zaposleni = new List<Zaposleni>();
+        }
         public Sertifikat(int id, string naziv, DateTime datumizdavanja)
         {
             SertifikatID = id;
@@ -78,6 +84,7 @@ namespace Klinika.Entiteti
         {
             Zaposleni = new List<Zaposleni>();
         }
+        public OblastRada(string naziv) { Naziv = naziv; Zaposleni = new List<Zaposleni>(); }
         public OblastRada(int id, string naziv)
         {
             Zaposleni = new List<Zaposleni>();

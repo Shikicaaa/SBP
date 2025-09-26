@@ -69,15 +69,55 @@ namespace Klinika
                 var selectedItem = listView1.SelectedItems[0];
                 string tipZaposlenog = selectedItem.SubItems[3].Text;
                 string jmbg = selectedItem.SubItems[0].Text;
-                if (tipZaposlenog.ToLower() == "lekar")
+                if (tipZaposlenog == "MedicinskaSestra")
                 {
-                    FormaSertifikati forma = new FormaSertifikati();
+                    FormaSertifikati forma = new FormaSertifikati(jmbg, 1);
+                    forma.ShowDialog();
+                }
+                else if (tipZaposlenog == "Laborant")
+                {
+                    FormaSertifikati forma = new FormaSertifikati(jmbg, 2);
+                    forma.ShowDialog();
+                }
+                else if (tipZaposlenog == "Lekar")
+                {
+                    FormaIzmeniZaposlenog forma = new FormaIzmeniZaposlenog(jmbg);
                     forma.ShowDialog();
                 }
             }
             else
             {
                 MessageBox.Show("Mora prvo da bude selektovan 1 zaposleni");
+            }
+        }
+
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listView1.SelectedItems.Count == 0) return;
+            ListViewItem item = listView1.SelectedItems[0];
+            string tip = item.SubItems[3].Text;
+            if (tip == "Lekar" || tip == "Laborant")
+            {
+                button4.Visible = true;
+            }
+            else
+            {
+                button4.Visible = false;
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            ListViewItem item = listView1.SelectedItems[0];
+            string tip = item.SubItems[3].Text;
+            if (tip == "Lekar")
+            {
+                Lekar l = DTOManager.VratiLekara(item.SubItems[0].Text);
+                FormaDajDijagnozuIRacun forma = new FormaDajDijagnozuIRacun(l);
+                forma.Show();
+            }else if(tip == "Laborant")
+            {
+                // uradi analize i naplati
             }
         }
     }

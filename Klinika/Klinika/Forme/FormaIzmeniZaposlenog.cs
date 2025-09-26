@@ -13,44 +13,72 @@ namespace Klinika.Forme
 {
     public partial class FormaIzmeniZaposlenog : Form
     {
-        private ZaposleniDetailed zaposleni;
-        public FormaIzmeniZaposlenog(ZaposleniDetailed zaposleni)
+        private string jmbg;
+        List<OdeljenjeView> odeljenja;
+        List<OdeljenjeView> odeljenjaLekara;
+        List<Pacijent> izabraniLekar;
+        public FormaIzmeniZaposlenog(string jmbg)
         {
             InitializeComponent();
-            this.zaposleni = zaposleni;
-        }
+            this.jmbg = jmbg;
 
+        }
+        private void Osvezi()
+        {
+            odeljenja = DTOManager.VratiOdeljenja();
+            odeljenjaLekara = DTOManager.VratiNadredjenoOdeljenje(jmbg);
+            izabraniLekar = DTOManager.VratiPacijenteLekara(jmbg);
+            lvPacijenti.Items.Clear();
+            foreach (var i in izabraniLekar)
+            {
+                lvPacijenti.Items.Add(new ListViewItem(new string[]
+                {
+                    i.BrojKartona, i.Ime, i.Prezime
+                }));
+            }
+            lvNadredjeneSobe.Items.Clear();
+            foreach (var i in odeljenjaLekara)
+            {
+                lvNadredjeneSobe.Items.Add(new ListViewItem(new string[]
+                {
+                    i.OdeljenjeID.ToString(), i.BrSobe
+                }));
+            }
+            mogucaOdeljenja.Items.Clear();
+            foreach (var i in odeljenja)
+            {
+                if (!odeljenjaLekara.Contains(i))
+                {
+                    mogucaOdeljenja.Items.Add(new ListViewItem(new string[]
+                    {
+                        i.OdeljenjeID.ToString(), i.BrSobe
+                    }));
+                }
+            }
+        }
         private void FormaIzmeniZaposlenog_Load(object sender, EventArgs e)
         {
-            tbJMBG.Text = zaposleni.JMBG;
-            tbIme.Text = zaposleni.Ime;
-            tbPrezime.Text = zaposleni.Prezime;
-            textBox1.Text = zaposleni.Adresa;
-            textBox2.Text = zaposleni.KontaktTelefon;
+            Osvezi();
+            tbSpecijalizacija.Text = DTOManager.VratiLekara(jmbg).Specijalizacija;
+        }
 
-            panelLekar.Visible = false;
-            panelLaborant.Visible = false;
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (mogucaOdeljenja.SelectedItems.Count > 0)
+            {
+                DTOManager.Nadredi(jmbg, int.Parse(mogucaOdeljenja.SelectedItems[0].SubItems[0].Text));
+                Osvezi();
+            }
+            else
+            {
+                MessageBox.Show("Odaberite bar 1 odeljenje.");
+                return;
+            }
+        }
 
-            if (this.zaposleni is LekarDetailed lekar)
-            {
-                panelLekar.Visible = true;
-                foreach (var odeljenje in lekar.Odeljenja)
-                {
-                    listaOdeljenja.Items.Add(odeljenje.Naziv);
-                }
-            }
-            else if (this.zaposleni is LaborantDetailed laborant)
-            {
-                panelLaborant.Visible = true;
-                foreach (var sertifikat in laborant.Sertifikati)
-                {
-                    listaSertifikata.Items.Add($"{sertifikat.Naziv} ({sertifikat.DatumIzdavanja.ToShortDateString()})");
-                }
-                foreach(var oblast in laborant.OblastiRada)
-                {
-                    listaOblasti.Items.Add($"{oblast.Naziv} ({oblast.Naziv})");
-                }
-            }
+        private void button2_Click(object sender, EventArgs e)
+        {
+            DTOManager.PromeniSpecijalizaciju(jmbg, tbSpecijalizacija.Text);
         }
     }
 }

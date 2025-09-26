@@ -53,5 +53,20 @@ namespace Klinika.Entiteti
             }
         }
         #endregion
+        public LaboratorijskaAnaliza()
+        {
+
+        }
+        public LaboratorijskaAnaliza(string vrsta, string refVrednosti, string rezultat, DateTime uzorkovanje, DateTime uvid, string komentar, Laborant l)
+        {
+            Vrsta = vrsta;
+            RefVrednosti = refVrednosti;
+            Rezultat = rezultat;
+            DatumUzorkovanja = uzorkovanje;
+            DatumUvida = uvid;
+            Komentar = komentar;
+            Laborant = l;
+        }
+
     }
 }

@@ -45,5 +45,17 @@ namespace Klinika
             FormaSveUsluge forma = new FormaSveUsluge(usluge);
             forma.ShowDialog();
         }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            FormaTermini forma = new FormaTermini();
+            forma.ShowDialog();
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            FormaOsiguranja forma = new FormaOsiguranja();
+            forma.ShowDialog();
+        }
     }
 }

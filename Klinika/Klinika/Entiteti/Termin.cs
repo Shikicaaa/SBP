@@ -19,5 +19,17 @@ namespace Klinika.Entiteti
         public virtual Odeljenje Odeljenje { get; set; }
         public virtual Pregled Pregled { get; set; }
         #endregion
+        public Termin()
+        {
+
+        }
+        public Termin(string status, DateTime datum, Lekar lekar, Pacijent p, Odeljenje o)
+        {
+            Status = status;
+            Datum = datum;
+            Lekar = lekar;
+            Pacijent = p;
+            Odeljenje = o;
+        }
     }
 }

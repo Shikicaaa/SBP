@@ -44,6 +44,8 @@
             tbIzabrani = new TextBox();
             button1 = new Button();
             button2 = new Button();
+            button3 = new Button();
+            button4 = new Button();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -166,12 +168,36 @@
             button2.UseVisualStyleBackColor = true;
             button2.Click += button2_Click;
             // 
+            // button3
+            // 
+            button3.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button3.Location = new Point(432, 352);
+            button3.Name = "button3";
+            button3.Size = new Size(164, 86);
+            button3.TabIndex = 4;
+            button3.Text = "Zakazi Termin";
+            button3.UseVisualStyleBackColor = true;
+            button3.Click += button3_Click;
+            // 
+            // button4
+            // 
+            button4.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button4.Location = new Point(624, 352);
+            button4.Name = "button4";
+            button4.Size = new Size(164, 86);
+            button4.TabIndex = 5;
+            button4.Text = "Izmeni";
+            button4.UseVisualStyleBackColor = true;
+            button4.Click += button4_Click;
+            // 
             // FormaPacijenti
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.PaleTurquoise;
             ClientSize = new Size(800, 450);
+            Controls.Add(button4);
+            Controls.Add(button3);
             Controls.Add(button2);
             Controls.Add(button1);
             Controls.Add(panel1);
@@ -202,5 +228,7 @@
         private TextBox tbIzabrani;
         private Button button1;
         private Button button2;
+        private Button button3;
+        private Button button4;
     }
 }

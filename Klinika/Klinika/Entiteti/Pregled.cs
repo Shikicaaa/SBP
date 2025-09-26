@@ -26,5 +26,16 @@ namespace Klinika.Entiteti
         {
             Analize = new List<LaboratorijskaAnaliza>();
         }
+        public Pregled(string opis, string dijagnoza, string terapija, string preporuka, Pacijent p, Odeljenje o, Lekar l)
+        {
+            Opis = opis;
+            Dijagnoza = dijagnoza;
+            Terapija = terapija;
+            Preporuka = preporuka;
+            Pacijent = p;
+            Lekar = l; 
+            Analize = new List<LaboratorijskaAnaliza>();
+            
+        }
     }
 }

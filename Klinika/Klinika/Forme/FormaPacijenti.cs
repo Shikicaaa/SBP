@@ -18,10 +18,10 @@ namespace Klinika.Forme
             InitializeComponent();
             p = pacijenti;
         }
-
-        private void FormaPacijenti_Load(object sender, EventArgs e)
+        private void OsveziFormu()
         {
             listView1.Items.Clear();
+            p = DTOManager.VratiSvePacijente();
             foreach (PacijentDetailed pacijent in p)
             {
                 ListViewItem item = new ListViewItem(new string[]
@@ -32,6 +32,10 @@ namespace Klinika.Forme
                 });
                 listView1.Items.Add(item);
             }
+        }
+        private void FormaPacijenti_Load(object sender, EventArgs e)
+        {
+            OsveziFormu();
         }
 
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
@@ -53,6 +57,8 @@ namespace Klinika.Forme
             {
                 ListViewItem item = listView1.SelectedItems[0];
                 string br_kartona = item.SubItems[0].Text;
+                DTOManager.ObrisiPacijenta(br_kartona);
+                OsveziFormu();
             }
             else
             {
@@ -65,6 +71,34 @@ namespace Klinika.Forme
         {
             FormaDodajPacijenta forma = new FormaDodajPacijenta();
             forma.ShowDialog();
+            OsveziFormu();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            if (listView1.SelectedItems.Count > 0)
+            {
+                ListViewItem item = listView1.SelectedItems[0];
+                string br_kartona = item.SubItems[0].Text;
+                FormaZakaziTermin forma = new FormaZakaziTermin(br_kartona);
+                forma.ShowDialog();
+                return;
+            }
+            MessageBox.Show("Morate da selektujete bar 1 pacijenta!");
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            if (listView1.SelectedItems.Count > 0)
+            {
+                ListViewItem item = listView1.SelectedItems[0];
+                string br_kartona = item.SubItems[0].Text;
+                FormaIzmeniPacijenta forma = new FormaIzmeniPacijenta(br_kartona);
+                forma.ShowDialog();
+                OsveziFormu();
+                return;
+            }
+            MessageBox.Show("Morate da selektujete bar 1 pacijenta!");
         }
     }
 }

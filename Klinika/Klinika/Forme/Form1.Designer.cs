@@ -34,6 +34,7 @@
             button4 = new Button();
             button5 = new Button();
             button6 = new Button();
+            button7 = new Button();
             SuspendLayout();
             // 
             // button1
@@ -112,6 +113,20 @@
             button6.TabIndex = 5;
             button6.Text = "Osiguranje";
             button6.UseVisualStyleBackColor = false;
+            button6.Click += button6_Click;
+            // 
+            // button7
+            // 
+            button7.BackColor = Color.Turquoise;
+            button7.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold);
+            button7.Location = new Point(15, 485);
+            button7.Margin = new Padding(3, 4, 3, 4);
+            button7.Name = "button7";
+            button7.Size = new Size(170, 70);
+            button7.TabIndex = 6;
+            button7.Text = "Termini";
+            button7.UseVisualStyleBackColor = false;
+            button7.Click += button7_Click;
             // 
             // Form1
             // 
@@ -120,6 +135,7 @@
             BackgroundImage = Properties.Resources.ChatGPT_Image_Sep_18__2025__07_57_31_PM;
             BackgroundImageLayout = ImageLayout.Stretch;
             ClientSize = new Size(914, 600);
+            Controls.Add(button7);
             Controls.Add(button6);
             Controls.Add(button5);
             Controls.Add(button4);
@@ -140,5 +156,6 @@
         private Button button4;
         private Button button5;
         private Button button6;
+        private Button button7;
     }
 }

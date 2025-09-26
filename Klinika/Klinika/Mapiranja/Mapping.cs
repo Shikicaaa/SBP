@@ -196,10 +196,10 @@ namespace Klinika.Mapiranja
             Map(x => x.ImaRFZO, "IMARFZO");
             References(x => x.IzabraniLekar, "IzabraniLekarJMBG");
 
-            HasMany(x => x.Termini).KeyColumn("PACIJENTBROJKARTONA").Inverse().Cascade.All();
-            HasMany(x => x.LaboratorijskeAnalize).KeyColumn("PACIJENTBROJKARTONA").Inverse().Cascade.All();
-            HasMany(x => x.Racuni).KeyColumn("PACIJENTBROJKARTONA").Inverse().Cascade.All();
-            HasMany(x => x.PrivatnaOsiguranja).KeyColumn("BROJKARTONA").Inverse().Cascade.All();
+            HasMany(x => x.Termini).KeyColumn("PACIJENTBROJKARTONA").Inverse().Cascade.None();
+            HasMany(x => x.LaboratorijskeAnalize).KeyColumn("PACIJENTBROJKARTONA").Inverse().Cascade.None();
+            HasMany(x => x.Racuni).KeyColumn("PACIJENTBROJKARTONA").Inverse().Cascade.None();
+            HasMany(x => x.PrivatnaOsiguranja).KeyColumn("BROJKARTONA").Inverse().Cascade.None();
         }
     }
     public class PregledMap : ClassMap<Pregled>
@@ -207,7 +207,7 @@ namespace Klinika.Mapiranja
         public PregledMap()
         {
             Table("PREGLED");
-            Id(x => x.PregledID, "PREGLEDID").GeneratedBy.Identity();
+            Id(x => x.PregledID, "PREGLEDID").GeneratedBy.Sequence("PREGLED_SEQ");
             Map(x => x.Opis, "OPISTEGOBA");
             Map(x => x.Dijagnoza, "DIJAGNOZA");
             Map(x => x.Terapija, "TERAPIJA");
@@ -227,7 +227,7 @@ namespace Klinika.Mapiranja
         public TerminMap()
         {
             Table("TERMIN");
-            Id(x => x.TerminID, "TERMINID").GeneratedBy.Identity();
+            Id(x => x.TerminID, "TERMINID").GeneratedBy.Sequence("TERMIN_SEQ");
             Map(x => x.Status, "STATUS");
             Map(x => x.Datum, "DATUMVREME");
 
@@ -243,7 +243,7 @@ namespace Klinika.Mapiranja
         public RacunMap()
         {
             Table("RACUN");
-            Id(x => x.RacunID, "RACUNID").GeneratedBy.Identity();
+            Id(x => x.RacunID, "RACUNID").GeneratedBy.Sequence("RACUN_SEQ");
             Map(x => x.NacinPlacanja, "NACINPLACANJA");
             Map(x => x.IznosOsiguranja, "IZNOSOSIGURANJE");
             Map(x => x.IznosPacijent, "IZNOSPACIJENT");
@@ -301,7 +301,7 @@ namespace Klinika.Mapiranja
         public SertifikatMap()
         {
             Table("SERTIFIKAT");
-            Id(x => x.SertifikatID, "SERTIFIKATID").GeneratedBy.Identity();
+            Id(x => x.SertifikatID, "SERTIFIKATID").GeneratedBy.Sequence("SERTIFIKAT_SEQ");
             Map(x => x.Naziv, "NAZIV");
             Map(x => x.DatumIzdavanja, "DATUMIZDAVANJA");
 
@@ -318,7 +318,7 @@ namespace Klinika.Mapiranja
         public OblastRadaMap()
         {
             Table("OBLASTRADA");
-            Id(x => x.OblastRadaID, "OBLASTRADAID").GeneratedBy.Identity();
+            Id(x => x.OblastRadaID, "OBLASTRADAID").GeneratedBy.Sequence("OBLAST_SEQ");
             Map(x => x.Naziv, "NAZIV");
 
             HasManyToMany(x => x.Zaposleni)
@@ -361,7 +361,7 @@ namespace Klinika.Mapiranja
         {
             Table("LABORATORIJSKAANALIZA");
 
-            Id(x => x.AnalizaID, "AnalizaID").GeneratedBy.Identity();
+            Id(x => x.AnalizaID, "AnalizaID").GeneratedBy.Sequence("ANALIZA_SEQ");
 
             Map(x => x.Vrsta, "Vrsta");
             Map(x => x.RefVrednosti, "ReferentneVrednosti");

@@ -22,6 +22,33 @@ namespace Klinika
         }
     }
 
+    public class OsiguravajucaKucaView
+    {
+        public virtual int BrojKuce { get; set; }
+        public virtual string Naziv { get; set; }
+        public virtual List<OsiguranjeView> Polise { get; set; }
+        public OsiguravajucaKucaView(int brojkuce, string naziv, List<OsiguranjeView> polise)
+        {
+            BrojKuce = brojkuce;
+            Naziv = naziv;
+            Polise = polise;
+        }
+        public OsiguravajucaKucaView() { }
+    }
+    public class OsiguranjeView
+    {
+        public virtual int BrojPolice { get; set; }
+        public virtual DateTime DatumIsteka { get; set; }
+        public virtual string BrojKartonaPacijenta { get; set; }
+
+        // Prazan konstruktor za lakše korišćenje
+        public OsiguranjeView() { }
+        public OsiguranjeView(int brojPolice, DateTime datumIsteka)
+        {
+            BrojPolice = brojPolice;
+            DatumIsteka = datumIsteka;
+        }
+    }
     public class KlinikaDetailed
     {
         public int KlinikaID { get; set; }

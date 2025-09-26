@@ -1,11 +1,14 @@
-﻿using NHibernate;
+﻿using Klinika.Entiteti;
+using Klinika.Forme;
+using NHibernate;
+using NHibernate.Linq;
+using NHibernate.Mapping;
+using NHibernate.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NHibernate.Linq;
-using Klinika.Entiteti;
-using NHibernate.Util;
-using Klinika.Forme;
+using System.Runtime.CompilerServices;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace Klinika
 {
@@ -296,6 +299,36 @@ namespace Klinika
             {
                 MessageBox.Show(ex.Message);
                 return 0;
+            }
+        }
+        public static Pacijent VratiP(string brojKartona)
+        {
+            using(ISession session = DataLayer.GetSession())
+            {
+                Pacijent p = session.Get<Pacijent>(brojKartona);
+                return p;
+            }
+        }
+        public static void IzmeniPacijenta(string brojKartona, string adresa, string kontakt, string email, Lekar l)
+        {
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                using (ITransaction tx = s.BeginTransaction())
+                {
+                    Pacijent p = s.Get<Pacijent>(brojKartona);
+                    p.Adresa = adresa == "" ? p.Adresa : adresa;
+                    p.KontaktTelefon = kontakt == "" ? p.KontaktTelefon : kontakt;
+                    p.Email = email == "" ? p.Email : email;
+                    p.IzabraniLekar = l == null ? p.IzabraniLekar : l;
+                    s.Update(p);
+                    tx.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
             }
         }
         public static PacijentDetailed VratiPacijenta(string brojKartona)
@@ -891,211 +924,371 @@ namespace Klinika
             }
             return odeljenjaView;
         }
-        public static void DodajSertifikatSestra(string jmbg, string nazivSertifikata, DateTime datumIzdavanja)
+        public static void DodajSertifikatSestra(string jmbg, int idSertifikata)
         {
-            using (var session = DataLayer.GetSession())
+            try
             {
-                using (var tx = session.BeginTransaction())
+                using (var session = DataLayer.GetSession())
                 {
-                    MedicinskaSestra z = session.Get<MedicinskaSestra>(jmbg);
-                    if (z == null) throw new Exception("Zaposleni nije pronadjen");
-
-                    Sertifikat sert = new Sertifikat
+                    using (var tx = session.BeginTransaction())
                     {
-                        Naziv = nazivSertifikata,
-                        DatumIzdavanja = datumIzdavanja
-                    };
+                        MedicinskaSestra z = session.Get<MedicinskaSestra>(jmbg);
+                        if (z == null) throw new Exception("Zaposleni nije pronadjen");
+                        Sertifikat s = session.Query<Sertifikat>().Where(s => s.SertifikatID == idSertifikata).First();
 
-                    z.Sertifikati.Add(sert);
-                    sert.Zaposleni.Add(z);
 
-                    session.SaveOrUpdate(sert);
-                    session.Update(z);
-                    tx.Commit();
-                }
-            }
-        }
+                        if (z.Sertifikati.Contains(s)) return;
+                        z.Sertifikati.Add(s);
 
-        public static void ObrisiSertifikatSestra(string jmbg, string nazivSertifikata)
-        {
-            using (var session = DataLayer.GetSession())
-            {
-                using (var tx = session.BeginTransaction())
-                {
-                    MedicinskaSestra z = session.Get<MedicinskaSestra>(jmbg);
-                    if (z == null) throw new Exception("Zaposleni nije pronadjen");
-
-                    var sert = z.Sertifikati.FirstOrDefault(s => s.Naziv == nazivSertifikata);
-                    if (sert != null)
-                    {
-                        z.Sertifikati.Remove(sert);
-                        sert.Zaposleni.Remove(z);
-
-                        session.Delete(sert);
+                        session.SaveOrUpdate(s);
                         session.Update(z);
                         tx.Commit();
                     }
                 }
-            }
-        }
-        public static void DodajSertifikatLaborant(string jmbg, string nazivSertifikata, DateTime datumIzdavanja)
-        {
-            using (var session = DataLayer.GetSession())
+            }catch(Exception e)
             {
-                using (var tx = session.BeginTransaction())
-                {
-                    Laborant z = session.Get<Laborant>(jmbg);
-                    if (z == null) throw new Exception("Zaposleni nije pronadjen");
-
-                    Sertifikat sert = new Sertifikat
-                    {
-                        Naziv = nazivSertifikata,
-                        DatumIzdavanja = datumIzdavanja
-                    };
-
-                    z.Sertifikati.Add(sert);
-                    sert.Zaposleni.Add(z);
-
-                    session.SaveOrUpdate(sert);
-                    session.Update(z);
-                    tx.Commit();
-                }
+                MessageBox.Show(e.Message);
+                return;
             }
         }
 
-        public static void ObrisiSertifikatLaborant(string jmbg, string nazivSertifikata)
+        public static void ObrisiSertifikatSestra(string jmbg, int idSertifikata)
         {
-            using (var session = DataLayer.GetSession())
+            try
             {
-                using (var tx = session.BeginTransaction())
+                using (var session = DataLayer.GetSession())
                 {
-                    Laborant z = session.Get<Laborant>(jmbg);
-                    if (z == null) throw new Exception("Zaposleni nije pronadjen");
-
-                    var sert = z.Sertifikati.FirstOrDefault(s => s.Naziv == nazivSertifikata);
-                    if (sert != null)
+                    using (var tx = session.BeginTransaction())
                     {
-                        z.Sertifikati.Remove(sert);
-                        sert.Zaposleni.Remove(z);
+                        MedicinskaSestra z = session.Get<MedicinskaSestra>(jmbg);
+                        if (z == null) throw new Exception("Zaposleni nije pronadjen");
 
-                        session.Delete(sert);
-                        session.Update(z);
+                        var sert = z.Sertifikati.FirstOrDefault(s => s.SertifikatID == idSertifikata);
+                        if (sert != null)
+                        {
+                            z.Sertifikati.Remove(sert);
+                        }
                         tx.Commit();
                     }
                 }
+            }catch(Exception ex) { MessageBox.Show(ex.Message); return; }
+        }
+        public static void DodajSertifikatLaborant(string jmbg, int idSertifikata)
+        {
+            try
+            {
+                using (var session = DataLayer.GetSession())
+                {
+                    using (var tx = session.BeginTransaction())
+                    {
+                        Laborant z = session.Get<Laborant>(jmbg);
+                        if (z == null) throw new Exception("Zaposleni nije pronadjen");
+
+                        Sertifikat sert = session.Query<Sertifikat>().Where(s => s.SertifikatID == idSertifikata).First();
+
+
+                        if (z.Sertifikati.Contains(sert)) return;
+                        z.Sertifikati.Add(sert);
+
+                        session.SaveOrUpdate(sert);
+                        session.Update(z);
+                        try
+                        {
+                            tx.Commit();    
+
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Postoji vec.");
+                            throw;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+        }
+
+        public static void ObrisiSertifikatLaborant(string jmbg, int idSertifikata)
+        {
+            try
+            {
+                using (var session = DataLayer.GetSession())
+                {
+                    using (var tx = session.BeginTransaction())
+                    {
+                        Laborant z = session.Get<Laborant>(jmbg);
+                        if (z == null) throw new Exception("Zaposleni nije pronadjen");
+
+                        var sert = z.Sertifikati.FirstOrDefault(s => s.SertifikatID == idSertifikata);
+                        if (sert != null)
+                        {
+                            z.Sertifikati.Remove(sert);
+                        }
+                        tx.Commit();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
             }
         }
         public static void DodajSpecijalizaciju(string jmbg, string specijalizacija)
         {
-            using (var session = DataLayer.GetSession())
+            try
             {
-                using (var tx = session.BeginTransaction())
+                using (var session = DataLayer.GetSession())
                 {
-                    Lekar lekar = session.Get<Lekar>(jmbg);
-                    if (lekar == null) throw new Exception("Lekar nije pronadjen");
+                    using (var tx = session.BeginTransaction())
+                    {
+                        Lekar lekar = session.Get<Lekar>(jmbg);
+                        if (lekar == null) throw new Exception("Lekar nije pronadjen");
 
-                    lekar.Specijalizacija = specijalizacija;
-                    session.Update(lekar);
-                    tx.Commit();
+                        lekar.Specijalizacija = specijalizacija;
+                        session.Update(lekar);
+                        try
+                        {
+                            tx.Commit();
+
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Postoji vec.");
+                            throw;
+                        }
+                    }
                 }
-            }
+
+            }catch(Exception ex) { MessageBox.Show(ex.Message); throw; }
         }
 
         public static void ObrisiSpecijalizaciju(string jmbg)
         {
-            using (var session = DataLayer.GetSession())
+            try
             {
-                using (var tx = session.BeginTransaction())
+                using (var session = DataLayer.GetSession())
                 {
-                    Lekar lekar = session.Get<Lekar>(jmbg);
-                    if (lekar == null) throw new Exception("Lekar nije pronadjen");
+                    using (var tx = session.BeginTransaction())
+                    {
+                        Lekar lekar = session.Get<Lekar>(jmbg);
+                        if (lekar == null) throw new Exception("Lekar nije pronadjen");
 
-                    lekar.Specijalizacija = null;
-                    session.Update(lekar);
-                    tx.Commit();
+                        lekar.Specijalizacija = null;
+                        session.Update(lekar);
+                        tx.Commit();
+                    }
                 }
             }
-        }
-        public static void DodajOblastRadaSestra(string jmbg, string nazivOblasti)
-        {
-           using (var session = DataLayer.GetSession())
-           {
-                using (var tx = session.BeginTransaction())
-                {
-                    MedicinskaSestra z = session.Get<MedicinskaSestra>(jmbg);
-                    if (z == null) throw new Exception("Zaposleni nije pronađen");
-
-                    var oblast = new OblastRada { Naziv = nazivOblasti };
-                    z.OblastiRada.Add(oblast);
-                    oblast.Zaposleni.Add(z);
-                    session.SaveOrUpdate(oblast);
-                    session.Update(z);
-                    tx.Commit();
-                }
-           }
-        }
-
-        public static void ObrisiOblastRadaSestra(string jmbg, string nazivOblasti)
-        {
-            using (var session = DataLayer.GetSession())
+            catch (Exception ex)
             {
-                using (var tx = session.BeginTransaction())
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+        }
+        public static void DodajOblastRadaSestra(string jmbg, int idOblasti)
+        {
+            try
+            {
+                using (var session = DataLayer.GetSession())
                 {
-                    MedicinskaSestra z = session.Get<MedicinskaSestra>(jmbg);
-                    if (z == null) throw new Exception("Zaposleni nije pronađen");
-
-                    var oblast = z.OblastiRada.FirstOrDefault(o => o.Naziv == nazivOblasti);
-                    if (oblast != null)
+                    using (var tx = session.BeginTransaction())
                     {
-                        z.OblastiRada.Remove(oblast);
-                        oblast.Zaposleni.Remove(z);
+                        MedicinskaSestra z = session.Get<MedicinskaSestra>(jmbg);
+                        if (z == null) throw new Exception("Zaposleni nije pronadjen");
 
-                        session.Delete(oblast);
+                        OblastRada sert = session.Query<OblastRada>().Where(s => s.OblastRadaID == idOblasti).First();
+
+
+
+                        if (z.OblastiRada.Contains(sert)) return;
+                        z.OblastiRada.Add(sert);
+
+                        session.SaveOrUpdate(sert);
+                        session.Update(z);
+                        try
+                        {
+                            tx.Commit();
+
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Postoji vec.");
+                            throw;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+        }
+
+        public static void ObrisiOblastRadaSestra(string jmbg, int idOblasti)
+        {
+            try
+            {
+                using (var session = DataLayer.GetSession())
+                {
+                    using (var tx = session.BeginTransaction())
+                    {
+                        MedicinskaSestra z = session.Get<MedicinskaSestra>(jmbg);
+                        if (z == null) throw new Exception("Zaposleni nije pronadjen");
+
+                        var sert = z.OblastiRada.FirstOrDefault(s => s.OblastRadaID == idOblasti);
+                        if (sert != null)
+                        {
+                            z.OblastiRada.Remove(sert);
+                        }
+                        tx.Commit();
+                    }
+                }
+            }catch(Exception ex) { MessageBox.Show(ex.Message); throw; }
+        }
+        public static void DodajOblastRadaLaborant(string jmbg, int idOblasti)
+        {
+            try
+            {
+                using (var session = DataLayer.GetSession())
+                {
+                    using (var tx = session.BeginTransaction())
+                    {
+                        Laborant z = session.Get<Laborant>(jmbg);
+                        if (z == null) throw new Exception("Zaposleni nije pronadjen");
+
+                        OblastRada sert = session.Query<OblastRada>().Where(s => s.OblastRadaID == idOblasti).First();
+
+
+                        if (z.OblastiRada.Contains(sert)) return;
+                        z.OblastiRada.Add(sert);
+
+                        session.SaveOrUpdate(sert);
                         session.Update(z);
                         tx.Commit();
                     }
                 }
             }
-        }
-        public static void DodajOblastRadaLaborant(string jmbg, string nazivOblasti)
-        {
-            using (var session = DataLayer.GetSession())
+            catch (Exception ex)
             {
-                using (var tx = session.BeginTransaction())
-                {
-                    Laborant z = session.Get<Laborant>(jmbg);
-                    if (z == null) throw new Exception("Zaposleni nije pronađen");
-
-                    var oblast = new OblastRada { Naziv = nazivOblasti };
-                    z.OblastiRada.Add(oblast);
-                    oblast.Zaposleni.Add(z);
-                    session.SaveOrUpdate(oblast);
-                    session.Update(z);
-                    tx.Commit();
-                }
+                MessageBox.Show(ex.Message);
+                throw;
             }
         }
 
-        public static void ObrisiOblastRadaLaborant(string jmbg, string nazivOblasti)
+        public static void ObrisiOblastRadaLaborant(string jmbg, int idOblasti)
         {
-            using (var session = DataLayer.GetSession())
+            try
             {
-                using (var tx = session.BeginTransaction())
+                using (var session = DataLayer.GetSession())
                 {
-                    Laborant z = session.Get<Laborant>(jmbg);
-                    if (z == null) throw new Exception("Zaposleni nije pronađen");
-
-                    var oblast = z.OblastiRada.FirstOrDefault(o => o.Naziv == nazivOblasti);
-                    if (oblast != null)
+                    using (var tx = session.BeginTransaction())
                     {
-                        z.OblastiRada.Remove(oblast);
-                        oblast.Zaposleni.Remove(z);
+                        Laborant z = session.Get<Laborant>(jmbg);
+                        if (z == null) throw new Exception("Zaposleni nije pronadjen");
 
-                        session.Delete(oblast);
-                        session.Update(z);
+                        var sert = z.OblastiRada.FirstOrDefault(s => s.OblastRadaID == idOblasti);
+                        if (sert != null)
+                        {
+                            z.OblastiRada.Remove(sert);
+                        }
                         tx.Commit();
                     }
                 }
+                
+            }catch(Exception ex) { MessageBox.Show(ex.Message); return; }
+        }
+        public static List<Pacijent> VratiPacijenteLekara(string jmbg)
+        {
+            try
+            {
+                using(ISession s = DataLayer.GetSession())
+                {
+                    var pacijenti = s.Query<Pacijent>()
+                             .Where(p => p.IzabraniLekar.JMBG == jmbg)
+                             .ToList();
+                    return pacijenti;
+
+                }
+            }catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return null;
+            }
+        }
+        public static List<OdeljenjeView> VratiNadredjenoOdeljenje(string jmbg)
+        {
+            var odeljenjaView = new List<OdeljenjeView>();
+            try
+            {
+                using(ISession s = DataLayer.GetSession())
+                {
+                    var lekar = s.Query<Lekar>().Where(l => l.JMBG == jmbg).First();
+                    foreach(var o in lekar.NadleznaOdeljenja)
+                    {
+                        odeljenjaView.Add(new OdeljenjeView(o.OdeljenjeID, o.Naziv, o.BrSobe, lekar));
+                    }
+                }
+                return odeljenjaView;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+        }
+        public static void Nadredi(string jmbg, int odeljenjeid)
+        {
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                using (var tx = s.BeginTransaction())
+                {
+                    var lekar = s.Query<Lekar>().First(l => l.JMBG == jmbg);
+                    var odeljenje = s.Get<Odeljenje>(odeljenjeid);
+
+                    if (odeljenje.NadlezniLekar?.JMBG == lekar.JMBG)
+                    {
+                        odeljenje.NadlezniLekar = null;
+                        MessageBox.Show("Uspesno obrisano nadredjenje!");
+                    }
+                    else
+                    {
+                        odeljenje.NadlezniLekar = lekar;
+                        MessageBox.Show("Uspesno dodato nadredjenje!");
+                    }
+
+                    s.Update(odeljenje);
+                    tx.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+        }
+        public static void PromeniSpecijalizaciju(string jmbg, string spec)
+        {
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    var lekar = s.Query<Lekar>().Where(l => l.JMBG == jmbg).First();
+                    lekar.Specijalizacija = spec;
+                    s.Update(lekar);
+                    MessageBox.Show("Uspesno promenjena specijalizacija!");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
             }
         }
         public static List<OdeljenjeView> VratiOdeljenja()
@@ -1116,6 +1309,107 @@ namespace Klinika
             {
                 MessageBox.Show(e.Message);
                 return null;
+            }
+        }
+        public static List<OblastRada> VratiOblastiSestre(string jmbg)
+        {
+            List<OblastRada> or = new List<OblastRada>();
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    var r = s.Query<MedicinskaSestra>().Where(r => r.JMBG == jmbg).First();
+                    foreach (OblastRada o in r.OblastiRada)
+                    {
+                        or.Add(o);
+                    }
+                    return or;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return null;
+            }
+        }
+        public static List<Sertifikat> VratiSertifikateSestre(string jmbg)
+        {
+            List<Sertifikat> or = new List<Sertifikat>();
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    var r = s.Query<MedicinskaSestra>().Where(r => r.JMBG == jmbg).First();
+                    foreach (Sertifikat o in r.Sertifikati)
+                    {
+                        or.Add(o);
+                    }
+                    return or;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return null;
+            }
+        }
+        public static List<OblastRada> VratiOblastiLaboranta(string jmbg)
+        {
+            List<OblastRada> or = new List<OblastRada>();
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    var r = s.Query<Laborant>().Where(r => r.JMBG == jmbg).First();
+                    foreach (OblastRada o in r.OblastiRada)
+                    {
+                        or.Add(o);
+                    }
+                    return or;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return null;
+            }
+        }
+        public static List<Sertifikat> VratiSertifikateLaboranta(string jmbg)
+        {
+            List<Sertifikat> or = new List<Sertifikat>();
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    var r = s.Query<Laborant>().Where(r => r.JMBG == jmbg).First();
+                    foreach (Sertifikat o in r.Sertifikati)
+                    {
+                        or.Add(o);
+                    }
+                    return or;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return null;
+            }
+        }
+        public static void ObrisiPacijenta(string brkart)
+        {
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    Pacijent r = s.Query<Pacijent>().Where(p => p.BrojKartona == brkart).First();
+                    s.Delete(r);
+                    s.Flush();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Greska pri brisanju pacijenta: " + ex.Message);
+                throw;
             }
         }
         public static void DodajPacijenta(
@@ -1151,6 +1445,271 @@ namespace Klinika
                 throw;
             }
         }
-// TODO OBAVI PREGLED, NAPLATI, OSIGURANJA DA SE DODAJU
+        public static MedicinskaSestra VratiSestru(string jmbg)
+        {
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    MedicinskaSestra l = s.Query<MedicinskaSestra>().Where(l => l.JMBG == jmbg).First();
+                    return l;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+        }
+        public static Laborant VratiLaboranta(string jmbg)
+        {
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    Laborant l = s.Query<Laborant>().Where(l => l.JMBG == jmbg).First();
+                    return l;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+        }
+        public static void DodajOblast(string naziv)
+        {
+            using (ISession s = DataLayer.GetSession())
+            {
+                using (ITransaction t = s.BeginTransaction())
+                {
+                    OblastRada o = new OblastRada(naziv);
+                    s.Save(o);
+                    t.Commit();
+                }
+            }
+        }
+        public static void DodajSertifikat(string naziv)
+        {
+            using (ISession s = DataLayer.GetSession())
+            {
+                using (ITransaction t = s.BeginTransaction())
+                {
+                    Sertifikat o = new Sertifikat(naziv);
+                    s.Save(o);
+                    t.Commit();
+                }
+            }
+        }
+        public static List<OblastRada> VratiOblastiRada()
+        {
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    var q = s.Query<OblastRada>().ToList();
+                    return q;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+        }
+        public static List<Sertifikat> VratiSertifikate()
+        {
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    var q = s.Query<Sertifikat>().ToList();
+                    return q;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+        }
+        // TODO OBAVI PREGLED, NAPLATI, OSIGURANJA DA SE DODAJU\
+        public static void ZakaziTermin(Termin termin) 
+        {
+            try
+            {
+                using (ISession session = DataLayer.GetSession())
+                using (ITransaction tx = session.BeginTransaction())
+                {
+                    session.Save(termin);
+                    tx.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+        }
+        public static List<Termin> VratiTermine()
+        {
+            try
+            {
+                using(ISession s = DataLayer.GetSession())
+                {
+                    var termini = s.Query<Termin>()
+                           .Fetch(t => t.Pacijent)
+                           .Fetch(t => t.Lekar)
+                           .Fetch(t => t.Odeljenje)
+                           .ToList();
+                    return termini;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+        }
+        public static void ObaviPregled(int idTermina, Pregled p)
+        {
+            try
+            {
+                using (ISession session = DataLayer.GetSession())
+                using (ITransaction tx = session.BeginTransaction())
+                {
+                    Termin termin = session.Query<Termin>().Where(t => t.TerminID == idTermina).First();
+                    termin.Status = "Realizovan";
+                    p.Termin = termin;
+                    session.SaveOrUpdate(p);
+                    tx.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+        }
+        public static void ObaviAnalizu(int idPregleda, LaboratorijskaAnaliza a)
+        {
+            try
+            {
+                using (ISession session = DataLayer.GetSession())
+                using (ITransaction tx = session.BeginTransaction())
+                {
+                    Pregled pregled = session.Query<Pregled>().Where(t => t.PregledID == idPregleda).First();
+                    a.Pregled = pregled;
+                    a.Lekar = pregled.Lekar;
+                    a.Pacijent = pregled.Pacijent;
+                    session.SaveOrUpdate(a);
+                    tx.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+        }
+        public static void ObrisiTermin(int idTermina)
+        {
+            try
+            {
+                using (ISession session = DataLayer.GetSession())
+                using (ITransaction tx = session.BeginTransaction())
+                {
+                    Termin t = session.Get<Termin>(idTermina);
+                    session.Delete(t);
+                    tx.Commit();
+                }
+            }catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+        public static void IzbaciRacun(Racun r, List<StavkaRacuna> stavke)
+        {
+            try
+            {
+                using (ISession session = DataLayer.GetSession())
+                using (ITransaction tx = session.BeginTransaction())
+                {
+                    Racun racun = r;
+                    foreach (var stavka in stavke)
+                    {
+                        Usluga persistentUsluga = session.Merge(stavka.Usluga);
+                        StavkaRacuna novaStavka = new StavkaRacuna
+                        {
+                            Racun = r,
+                            Usluga = persistentUsluga,
+                            Kolicina = stavka.Kolicina,
+                            Popust = stavka.Popust
+                        };
+
+                        r.StavkaRacuna.Add(novaStavka);
+                    }
+
+                    session.SaveOrUpdate(racun);
+                    tx.Commit();
+                }
+            }catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+        public static List<OsiguravajucaKuca> VratiOsiguravajuceKuce()
+        {
+            try
+            {
+                using (ISession s = DataLayer.GetSession())
+                {
+                    var kuce = s.Query<OsiguravajucaKuca>().ToList();
+
+                    return kuce;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return null;
+            }
+        }
+        public static void DodajOsiguranje(string naziv)
+        {
+            try
+            {
+                using(ISession s = DataLayer.GetSession())
+                using(ITransaction tx = s.BeginTransaction())
+                {
+                    OsiguravajucaKuca osiguranje = new OsiguravajucaKuca();
+                    osiguranje.Naziv = naziv;
+                    s.Save(osiguranje);
+                    tx.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+        }
+        public static List<Osiguranje> VratiOsiguranja(int broj_kuce)
+        {
+            try
+            {
+                using(ISession s = DataLayer.GetSession())
+                {
+                    var osiguranja = s.Query<Osiguranje>()
+                              .Where(p => p.Kuca.BrojKuce == broj_kuce)
+                              .ToList();
+                    return osiguranja;
+                }
+            }catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return null;
+            }
+        }
     }
 }

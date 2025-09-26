@@ -47,6 +47,13 @@ namespace Klinika.Entiteti
             }
         }
         #endregion
+        public StavkaRacuna() { }
+        public StavkaRacuna(Usluga u, double popust = 0, double kolicina = 1)
+        {
+            Usluga = u;
+            Popust = popust;
+            Kolicina = kolicina;
+        }
     }
     public class Racun
     {
@@ -66,6 +73,16 @@ namespace Klinika.Entiteti
         #endregion
         public Racun()
         {
+            StavkaRacuna = new List<StavkaRacuna>();
+        }
+        public Racun(string nacin, double iznosO, double iznosP, Pacijent p, Lekar l)
+        {
+            NacinPlacanja = nacin;
+            IznosOsiguranja = iznosO;
+            IznosPacijent = iznosP;
+            Cena = iznosO + iznosP;
+            Pacijent = p;
+            Lekar = l;
             StavkaRacuna = new List<StavkaRacuna>();
         }
     }
